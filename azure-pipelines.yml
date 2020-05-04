@@ -4,12 +4,16 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
+variables:
+  projects: src/**/*.csproj
+  verbosity: Normal
+
 steps:
   - task: DotNetCoreCLI@2
     displayName: dotnet restore
     inputs:
       command: restore
-      projects: src/**/*.csproj
+      projects: $(projects)
       feedsToUse: select
       vstsFeed: 64b0deef-5537-43ed-bd33-5c7238671d36/3d2fb4cf-97cc-47e6-a62a-ab9f50090965
       verbosityRestore: $(verbosity)
@@ -18,7 +22,7 @@ steps:
     displayName: dotnet build
     inputs:
       command: build
-      projects: src/**/*.csproj
+      projects: $(projects)
       arguments: --no-restore
 
   - task: DotNetCoreCLI@2
