@@ -1,19 +1,45 @@
 trigger:
-- refs/tags/*
+- refs/heads/*
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: ubuntu-latest
+
+variables:
+  projects: src/**/*.csproj
+  verbosity: Normal
 
 steps:
   - task: DotNetCoreCLI@2
+    displayName: dotnet restore
     inputs:
-      command: 'pack'
-      packagesToPack: 'src/**/*.csproj'
-      versioningScheme: 'off'
+      command: restore
+      projects: $(projects)
+      feedsToUse: select
+      vstsFeed: 64b0deef-5537-43ed-bd33-5c7238671d36/3d2fb4cf-97cc-47e6-a62a-ab9f50090965
+      verbosityRestore: $(verbosity)
 
-  - task: NuGetCommand@2
+  - task: DotNetCoreCLI@2
+    displayName: dotnet build
     inputs:
-      command: 'push'
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-      nuGetFeedType: 'external'
-      publishFeedCredentials: 'NuGet'
+      command: build
+      projects: $(projects)
+      arguments: --no-restore
+
+  - task: DotNetCoreCLI@2
+    displayName: dotnet test
+    inputs:
+      command: test
+      projects: '**/*.Test.csproj;**/*.Tests.csproj'
+      arguments: --no-build
+
+  - task: DotNetCoreCLI@2
+    displayName: dotnet push
+    condition: and(succeeded(), eq('refs/heads/master', variables['Build.SourceBranch']))
+    inputs:
+      command: push
+      packagesToPush: $(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg
+      nuGetFeedType: internal
+      publishVstsFeed: 64b0deef-5537-43ed-bd33-5c7238671d36/3d2fb4cf-97cc-47e6-a62a-ab9f50090965
+      allowPackageConflicts: true
+      verbosityPush: $(verbosity)
+      arguments: --no-build
