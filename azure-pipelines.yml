@@ -34,6 +34,7 @@ steps:
 
   - task: DotNetCoreCLI@2
     displayName: dotnet push
+    condition: and(succeeded(), eq('refs/heads/master', variables['Build.SourceBranch']))
     inputs:
       command: push
       packagesToPush: $(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg
