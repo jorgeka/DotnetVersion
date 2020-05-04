@@ -7,9 +7,21 @@ pool:
 steps:
   - task: DotNetCoreCLI@2
     inputs:
-      command: 'pack'
-      packagesToPack: 'src/**/*.csproj'
-      versioningScheme: 'off'
+      command: 'restore'
+      projects: 'src/**/*.csproj'
+      feedsToUse: 'select'
+      vstsFeed: '64b0deef-5537-43ed-bd33-5c7238671d36/3d2fb4cf-97cc-47e6-a62a-ab9f50090965'
+      verbosityRestore: 'Normal'
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'build'
+      projects: 'src/**/*.csproj'
+      arguments: '--no-restore'
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'test'
+      projects: '**/*.Test.csproj;**/*.Tests.csproj'
+      arguments: '--no-build'
 
   - task: NuGetCommand@2
     inputs:
